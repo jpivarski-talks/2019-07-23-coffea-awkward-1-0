@@ -11,7 +11,7 @@
   \setbeamertemplate{footline}[frame number]  % or "page number"
   \setbeamercolor{frametitle}{fg=white}
   \setbeamercolor{footline}{fg=black}
-} 
+}
 
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
@@ -56,9 +56,28 @@
 
 % START START START START START START START START START START START START START
 
-\begin{frame}{First slide}
-\vspace{0.5 cm}
-HERE
+\begin{frame}[fragile]{First of all: combinatorics language}
+\vspace{0.3 cm}
+\textcolor{darkblue}{Benchmark 8}: ``For events with at least three leptons and a same-flavor opposite-sign lepton pair, find the same-flavor opposite-sign lepton pair with the mass closest to 91.2 GeV and plot the pT of the leading other lepton.''
+
+\small
+\vspace{0.2 cm}
+\begin{Verbatim}[commandchars=\\\{\}]
+leptons = electrons \textcolor{blue}{union} muons
+
+\textcolor{blue}{cut} count(leptons) >= \textcolor{mauve}{3} \textcolor{blue}{named} "three_leptons" \{
+    Z = electrons \textcolor{blue}{as} (lep1, lep2) \textcolor{blue}{union} muons \textcolor{blue}{as} (lep1, lep2)
+            \textcolor{blue}{where} lep1.charge != lep2.charge
+            \textcolor{blue}{min by} abs(mass(lep1, lep2) - \textcolor{mauve}{91.2})
+
+    third = leptons \textcolor{blue}{except} [Z.lep1, Z.lep2] \textcolor{blue}{max by} pt
+
+    \textcolor{blue}{hist} third.pt \textcolor{blue}{by} regular(\textcolor{mauve}{100}, \textcolor{mauve}{0}, \textcolor{mauve}{250})
+        \textcolor{blue}{named} \textcolor{mauve}{"third_pt"} \textcolor{blue}{titled} \textcolor{mauve}{"Leading other lepton pT"}
+\}
+\end{Verbatim}
+
+\mbox{ } \hfill \textcolor{blue}{\underline{\url{https://github.com/jpivarski/PartiQL}}} \hfill \mbox{ }
 \end{frame}
 
 \end{document}
