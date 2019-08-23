@@ -30,10 +30,10 @@
 \xdefinecolor{darkorange}{rgb}{0.8,0.5,0}
 \xdefinecolor{darkred}{rgb}{0.7,0,0}
 \xdefinecolor{mauve}{rgb}{0.58,0,0.82}
-\xdefinecolor{brown}{rgb}{0.64,0.16,0.16}
+\xdefinecolor{brown}{rgb}{0.5,0.16,0.16}
 \xdefinecolor{reallydarkgreen}{rgb}{0,0.25,0}
 
-\title[2019-07-23-coffea-awkward-1-0]{Future of Awkward-Array}
+\title[2019-07-23-coffea-awkward-1-0]{Combinatorics language and Awkward 1.0 \\ {\small A report from Muppet Labs, where the future is being made today!}}
 \author{Jim Pivarski}
 \institute{Princeton University -- IRIS-HEP}
 \date{August 23, 2019}
@@ -57,7 +57,7 @@
 
 % START START START START START START START START START START START START START
 
-\begin{frame}[fragile]{First of all: combinatorics language}
+\begin{frame}[fragile]{First: combinatorics language}
 \vspace{0.3 cm}
 \textcolor{darkblue}{Benchmark 8}: ``For events with at least three leptons and a same-flavor opposite-sign lepton pair, find the same-flavor opposite-sign lepton pair with the mass closest to 91.2 GeV and plot the pT of the leading other lepton.''
 
@@ -66,14 +66,14 @@
 \begin{Verbatim}[commandchars=\\\{\}]
 leptons = electrons \textcolor{darkgreen}{\textbf{union}} muons
 
-\textcolor{darkgreen}{\textbf{cut}} \textcolor{darkblue}{count}(leptons) >= \textcolor{brown}{3} \textcolor{darkgreen}{\textbf{named}} \textcolor{brown}{"three_leptons"} \{
+\textcolor{darkgreen}{\textbf{cut}} \textcolor{blue}{count}(leptons) >= \textcolor{brown}{3} \textcolor{darkgreen}{\textbf{named}} \textcolor{brown}{"three_leptons"} \{
     Z = electrons \textcolor{darkgreen}{\textbf{as}} (lep1, lep2) \textcolor{darkgreen}{\textbf{union}} muons \textcolor{darkgreen}{\textbf{as}} (lep1, lep2)
-            \textcolor{darkgreen}{\textbf{where}} lep1\textcolor{darkblue}{.charge} != lep2\textcolor{darkblue}{.charge}
-            \textcolor{darkgreen}{\textbf{min by}} \textcolor{darkblue}{abs}(\textcolor{darkblue}{mass}(lep1, lep2) - \textcolor{brown}{91.2})
+            \textcolor{darkgreen}{\textbf{where}} lep1\textcolor{darkgray}{.charge} != lep2\textcolor{darkgray}{.charge}
+            \textcolor{darkgreen}{\textbf{min by}} \textcolor{blue}{abs}(\textcolor{blue}{mass}(lep1, lep2) - \textcolor{brown}{91.2})
 
-    third = leptons \textcolor{darkgreen}{\textbf{except}} [Z\textcolor{darkblue}{.lep1}, Z\textcolor{darkblue}{.lep2}] \textcolor{darkgreen}{\textbf{max by}} pt
+    third = leptons \textcolor{darkgreen}{\textbf{except}} [Z\textcolor{darkgray}{.lep1}, Z\textcolor{darkgray}{.lep2}] \textcolor{darkgreen}{\textbf{max by}} pt
 
-    \textcolor{darkgreen}{\textbf{hist}} third\textcolor{darkblue}{.pt} \textcolor{darkgreen}{\textbf{by}} regular(\textcolor{brown}{100}, \textcolor{brown}{0}, \textcolor{brown}{250})
+    \textcolor{darkgreen}{\textbf{hist}} third\textcolor{darkgray}{.pt} \textcolor{darkgreen}{\textbf{by}} \textcolor{blue}{regular}(\textcolor{brown}{100}, \textcolor{brown}{0}, \textcolor{brown}{250})
         \textcolor{darkgreen}{\textbf{named}} \textcolor{brown}{"third_pt"} \textcolor{darkgreen}{\textbf{titled}} \textcolor{brown}{"Leading other lepton pT"}
 \}
 \end{Verbatim}
@@ -144,18 +144,42 @@ so that an analysis can start with a few lines of array-at-a-time work, enter a 
 \end{frame}
 
 \begin{frame}{Awkward 1.0}
-\large
+\Large
 \vspace{0.5 cm}
-{\Large Consolidation of {\tt awkward}, {\tt awkward-numba}, {\tt awkward-cpp}, etc.\ into a single package that shares code}
+Consolidation of {\tt awkward}, {\tt awkward-numba}, {\tt awkward-cpp}, etc.\ into a single package that shares code
 
-\begin{enumerate}
-\item because it would simplify many implementations, allowing for greater generality (e.g.\ {\normalsize \mintinline{python}{JaggedArray.__getitem__}}) and eliminating Numpy corner-case bugs (e.g.\ max of empty array).
-
+\large
+\vspace{0.15 cm}
+\begin{enumerate}\setlength{\itemsep}{0.3 cm}
+\item because it would allow for more generality \mbox{(e.g.\ {\normalsize \mintinline{python}{JaggedArray.__getitem__}}),\hspace{-1 cm}}
+\item because it would eliminate Numpy corner-case bugs (e.g.\ empty array max),
+\item because some operations would be faster (e.g.\ single pass over memory, validity checks integrated into the computational pass),
+\item as an opportunity to fix bad interface/design choices,
+\item but mainly because we want all these features (Python, Numba, and eventually GPU), but keeping $N$ packages up-to-date and consistent with each other is beyond our foreseeable resources.
 \end{enumerate}
-
 \end{frame}
 
-\begin{frame}{}
+\begin{frame}{One implementation in layers, rather than $N$ implementations}
+\vspace{0.4 cm}
+\begin{columns}
+\column{0.63\linewidth}
+\includegraphics[width=\linewidth]{awkward-1-0-layers.pdf}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Status (after 1 week)}
+\vspace{0.5 cm}
+\large
+\begin{enumerate}\setlength{\itemsep}{0.35 cm}
+\item Skeleton for 3 layers: \textcolor{darkorange}{\bf cpu-kernels}, \textcolor{darkorange}{\bf C++}, \textcolor{darkorange}{\bf Python (pybind11)}, \textcolor{darkorange}{\bf Numba}.
+\item Compiles/tests on \{Linux, MacOS, Windows\} $\times$ \{Python 2.7, 3.4--3.7\} $\times$ \{Numpy 1.13.1, 1.14.5, latest\}.
+\item Deploys wheels for \{Linux, MacOS, Windows\} $\times$ \{Python 2.7, 3.4--3.7\}.
+\item Unified memory management between Python reference count, \mintinline{c++}{std::shared_ptr}, and Numba's ownership model.
+\item Basic C++ class and Numba model for \mintinline{python}{ListOffsetArray} with \mintinline{python}{__getitem__(int)} and \mintinline{python}{__getitem__(slice)}.
+\end{enumerate}
+
+\vspace{0.5 cm}
+\mbox{ } \hfill \textcolor{blue}{\underline{\url{https://github.com/jpivarski/awkward-1.0}}} \hfill \mbox{ }
 \end{frame}
 
 \end{document}
