@@ -29,8 +29,9 @@
 \xdefinecolor{darkgrey}{rgb}{0.35,0.35,0.35}
 \xdefinecolor{darkorange}{rgb}{0.8,0.5,0}
 \xdefinecolor{darkred}{rgb}{0.7,0,0}
-\definecolor{darkgreen}{rgb}{0,0.6,0}
-\definecolor{mauve}{rgb}{0.58,0,0.82}
+\xdefinecolor{mauve}{rgb}{0.58,0,0.82}
+\xdefinecolor{brown}{rgb}{0.64,0.16,0.16}
+\xdefinecolor{reallydarkgreen}{rgb}{0,0.25,0}
 
 \title[2019-07-23-coffea-awkward-1-0]{Future of Awkward-Array}
 \author{Jim Pivarski}
@@ -65,15 +66,15 @@
 \begin{Verbatim}[commandchars=\\\{\}]
 leptons = electrons \textcolor{blue}{union} muons
 
-\textcolor{blue}{cut} count(leptons) >= \textcolor{mauve}{3} \textcolor{blue}{named} "three_leptons" \{
+\textcolor{blue}{cut} \textcolor{reallydarkgreen}{count}(leptons) >= \textcolor{brown}{3} \textcolor{blue}{named} \textcolor{brown}{"three_leptons"} \{
     Z = electrons \textcolor{blue}{as} (lep1, lep2) \textcolor{blue}{union} muons \textcolor{blue}{as} (lep1, lep2)
-            \textcolor{blue}{where} lep1.charge != lep2.charge
-            \textcolor{blue}{min by} abs(mass(lep1, lep2) - \textcolor{mauve}{91.2})
+            \textcolor{blue}{where} lep1\textcolor{reallydarkgreen}{.charge} != lep2\textcolor{reallydarkgreen}{.charge}
+            \textcolor{blue}{min by} \textcolor{reallydarkgreen}{abs}(\textcolor{reallydarkgreen}{mass}(lep1, lep2) - \textcolor{brown}{91.2})
 
-    third = leptons \textcolor{blue}{except} [Z.lep1, Z.lep2] \textcolor{blue}{max by} pt
+    third = leptons \textcolor{blue}{except} [Z\textcolor{reallydarkgreen}{.lep1}, Z\textcolor{reallydarkgreen}{.lep2}] \textcolor{blue}{max by} pt
 
-    \textcolor{blue}{hist} third.pt \textcolor{blue}{by} regular(\textcolor{mauve}{100}, \textcolor{mauve}{0}, \textcolor{mauve}{250})
-        \textcolor{blue}{named} \textcolor{mauve}{"third_pt"} \textcolor{blue}{titled} \textcolor{mauve}{"Leading other lepton pT"}
+    \textcolor{blue}{hist} third\textcolor{reallydarkgreen}{.pt} \textcolor{blue}{by} regular(\textcolor{brown}{100}, \textcolor{brown}{0}, \textcolor{brown}{250})
+        \textcolor{blue}{named} \textcolor{brown}{"third_pt"} \textcolor{blue}{titled} \textcolor{brown}{"Leading other lepton pT"}
 \}
 \end{Verbatim}
 
