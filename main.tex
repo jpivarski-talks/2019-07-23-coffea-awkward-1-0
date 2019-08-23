@@ -64,21 +64,98 @@
 \small
 \vspace{0.2 cm}
 \begin{Verbatim}[commandchars=\\\{\}]
-leptons = electrons \textcolor{blue}{union} muons
+leptons = electrons \textcolor{darkgreen}{\textbf{union}} muons
 
-\textcolor{blue}{cut} \textcolor{reallydarkgreen}{count}(leptons) >= \textcolor{brown}{3} \textcolor{blue}{named} \textcolor{brown}{"three_leptons"} \{
-    Z = electrons \textcolor{blue}{as} (lep1, lep2) \textcolor{blue}{union} muons \textcolor{blue}{as} (lep1, lep2)
-            \textcolor{blue}{where} lep1\textcolor{reallydarkgreen}{.charge} != lep2\textcolor{reallydarkgreen}{.charge}
-            \textcolor{blue}{min by} \textcolor{reallydarkgreen}{abs}(\textcolor{reallydarkgreen}{mass}(lep1, lep2) - \textcolor{brown}{91.2})
+\textcolor{darkgreen}{\textbf{cut}} \textcolor{darkblue}{count}(leptons) >= \textcolor{brown}{3} \textcolor{darkgreen}{\textbf{named}} \textcolor{brown}{"three_leptons"} \{
+    Z = electrons \textcolor{darkgreen}{\textbf{as}} (lep1, lep2) \textcolor{darkgreen}{\textbf{union}} muons \textcolor{darkgreen}{\textbf{as}} (lep1, lep2)
+            \textcolor{darkgreen}{\textbf{where}} lep1\textcolor{darkblue}{.charge} != lep2\textcolor{darkblue}{.charge}
+            \textcolor{darkgreen}{\textbf{min by}} \textcolor{darkblue}{abs}(\textcolor{darkblue}{mass}(lep1, lep2) - \textcolor{brown}{91.2})
 
-    third = leptons \textcolor{blue}{except} [Z\textcolor{reallydarkgreen}{.lep1}, Z\textcolor{reallydarkgreen}{.lep2}] \textcolor{blue}{max by} pt
+    third = leptons \textcolor{darkgreen}{\textbf{except}} [Z\textcolor{darkblue}{.lep1}, Z\textcolor{darkblue}{.lep2}] \textcolor{darkgreen}{\textbf{max by}} pt
 
-    \textcolor{blue}{hist} third\textcolor{reallydarkgreen}{.pt} \textcolor{blue}{by} regular(\textcolor{brown}{100}, \textcolor{brown}{0}, \textcolor{brown}{250})
-        \textcolor{blue}{named} \textcolor{brown}{"third_pt"} \textcolor{blue}{titled} \textcolor{brown}{"Leading other lepton pT"}
+    \textcolor{darkgreen}{\textbf{hist}} third\textcolor{darkblue}{.pt} \textcolor{darkgreen}{\textbf{by}} regular(\textcolor{brown}{100}, \textcolor{brown}{0}, \textcolor{brown}{250})
+        \textcolor{darkgreen}{\textbf{named}} \textcolor{brown}{"third_pt"} \textcolor{darkgreen}{\textbf{titled}} \textcolor{brown}{"Leading other lepton pT"}
 \}
 \end{Verbatim}
 
+\vspace{-0.1 cm}
 \mbox{ } \hfill \textcolor{blue}{\underline{\url{https://github.com/jpivarski/PartiQL}}} \hfill \mbox{ }
+\end{frame}
+
+\begin{frame}{The ``key'' point}
+\vspace{-0.25 cm}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{center}
+muons
+
+\vspace{0.1 cm}
+\begin{tabular}{| c | c c c c |}
+\hline id & $p_T$ & $\eta$ & $\phi$ & \ldots \\\hline
+\#0(0, 0) & \ldots & \ldots & \ldots & \ldots \\
+\#0(0, 1) & \ldots & \ldots & \ldots & \ldots \\
+\#0(0, 2) & \ldots & \ldots & \ldots & \ldots \\
+\#0(2, 0) & \ldots & \ldots & \ldots & \ldots \\
+\#0(2, 1) & \ldots & \ldots & \ldots & \ldots \\\hline
+\end{tabular}
+\end{center}
+
+\column{0.4\linewidth}
+\begin{center}
+jets
+
+\vspace{0.1 cm}
+\begin{tabular}{| c | c c c c |}
+\hline id & $p_T$ & $\eta$ & $\phi$ & \ldots \\\hline
+\#1(0, 0) & \ldots & \ldots & \ldots & \ldots \\
+\#1(0, 1) & \ldots & \ldots & \ldots & \ldots \\
+\#1(1, 0) & \ldots & \ldots & \ldots & \ldots \\
+\#1(2, 0) & \ldots & \ldots & \ldots & \ldots \\
+\#1(2, 1) & \ldots & \ldots & \ldots & \ldots \\
+\#1(2, 2) & \ldots & \ldots & \ldots & \ldots \\
+\#1(2, 3) & \ldots & \ldots & \ldots & \ldots \\
+\#1(2, 4) & \ldots & \ldots & \ldots & \ldots \\
+\hline
+\end{tabular}
+\end{center}
+\end{columns}
+
+\vspace{0.25 cm}
+Leaves of an awkward-array structure are assigned unique identifiers (``surrogate keys'' in database terminology). Identity follows particles through mathematical operations, so that filtered (\textcolor{darkgreen}{\textbf{where}}) and recombined (\textcolor{darkgreen}{\textbf{join}}, \textcolor{darkgreen}{\textbf{union}}) particle attributes match up.
+
+\vspace{0.25 cm}
+Jagged arrays with different key indexes (e.g. {\tt \#0} and {\tt \#1}) can't be combined, even if they accidentally have the right number per event.
+\end{frame}
+
+\begin{frame}{Ultimate goal: multi-paradigm awkward-arrays}
+\large
+\vspace{0.5 cm}
+{\Large Want to use the same data structure with}
+
+\vspace{0.15 cm}
+\begin{itemize}
+\item Numpy-style array-at-a-time operations in Python (``classic awkward''),
+\item declarative (order-independent) query language with surrogate keys, and
+\item procedural programming (traditional for-loops) in Numba,
+\end{itemize}
+
+\vspace{0.15 cm}
+so that an analysis can start with a few lines of array-at-a-time work, enter a declarative block to do some complex combinatorics, and then a Numbafied function for something that can't be expressed well in either abstraction.
+\end{frame}
+
+\begin{frame}{Awkward 1.0}
+\large
+\vspace{0.5 cm}
+{\Large Consolidation of {\tt awkward}, {\tt awkward-numba}, {\tt awkward-cpp}, etc.\ into a single package that shares code}
+
+\begin{enumerate}
+\item because it would simplify many implementations, allowing for greater generality (e.g.\ {\normalsize \mintinline{python}{JaggedArray.__getitem__}}) and eliminating Numpy corner-case bugs (e.g.\ max of empty array).
+
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{}
 \end{frame}
 
 \end{document}
