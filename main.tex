@@ -167,12 +167,70 @@ Consolidation of {\tt awkward}, {\tt awkward-numba}, {\tt awkward-cpp}, etc.\ in
 \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]{Interface changes}
+\Large
+\vspace{0.25 cm}
+Interface changes are not technically coupled to the internal redesign, but I think it's a good time to introduce them.
+
+\normalsize
+\vspace{0.5 cm}
+\begin{columns}
+\column{0.5\linewidth}
+\mbox{ } \hfill \textcolor{darkblue}{\Large\underline{Awkward 0.x}} \hfill \mbox{ }
+
+\vspace{0.2 cm}
+Structure manipulation and custom physics functions are methods.
+
+\small
+\begin{minted}[stripnl=false]{python}
+
+x.cross(y)  # cross-join
+x.cross(y)  # 3D cross-product
+x.colname   # column data
+\end{minted}
+
+\normalsize
+\vspace{0.1 cm}
+``Layout'' is visible as nested classes.
+\vspace{\baselineskip}
+
+\small
+\begin{minted}{python}
+ChunkedArray(JaggedArray(...))
+\end{minted}
+
+\column{0.5\linewidth}
+\mbox{ } \hfill \textcolor{darkblue}{\Large\underline{Awkward 1.x}} \hfill \mbox{ }
+
+\vspace{0.2 cm}
+Structure manipulation are functions; custom physics functions are methods.
+
+\small
+\begin{minted}{python}
+import awkward as ak
+ak.cross(x, y) # cross-join
+x.cross(y)     # 3D cross-product
+x.colname      # column data
+\end{minted}
+
+\normalsize
+\vspace{0.1 cm}
+User sees a single \mintinline{python}{Array} class; the layout is hidden inside.
+
+\small
+\begin{minted}{python}
+Array(...)   # .layout for details
+\end{minted}
+
+\end{columns}
+\end{frame}
+
 \begin{frame}{Status (after 1 week)}
 \vspace{0.5 cm}
 \large
 \begin{enumerate}\setlength{\itemsep}{0.35 cm}
 \item Skeleton for 3 layers: \textcolor{darkorange}{\bf cpu-kernels}, \textcolor{darkorange}{\bf C++}, \textcolor{darkorange}{\bf Python (pybind11)}, \textcolor{darkorange}{\bf Numba}.
-\item Compiles/tests on \{Linux, MacOS, Windows\} $\times$ \{Python 2.7, 3.4--3.7\} $\times$ \{Numpy 1.13.1, 1.14.5, latest\}.
+\item Compiles/tests on \{Linux, MacOS, Windows\} $\times$ \{Python 2.7, 3.4--3.7\} $\times$ \{Numpy 1.13.1, 1.14.5, latest\}. \textcolor{gray}{(Azure Pipelines are fast!)}
 \item Deploys wheels for \{Linux, MacOS, Windows\} $\times$ \{Python 2.7, 3.4--3.7\}.
 \item Unified memory management between Python reference count, \mintinline{c++}{std::shared_ptr}, and Numba's ownership model.
 \item Basic C++ class and Numba model for \mintinline{python}{ListOffsetArray} with \mintinline{python}{__getitem__(int)} and \mintinline{python}{__getitem__(slice)}.
